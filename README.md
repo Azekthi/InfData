@@ -1,48 +1,51 @@
 # InfData
-ACEINF の計測データをまとめておくためのリポジトリです。
+This is a repository for collecting aircraft data from *Ace Combat Infinity*, a free-to-play PlayStation 3 game developed by Bandai Namco Entertainment.
 
-## ファイル フォーマット
+Forked from the original at https://github.com/InfBuild/InfData
+
+## File Format
 
 ```
 Column Name 1	Column Name 2	Column Name 3
 Foo	0.5?	Bar,Baz
 ```
 
-各行が一つのアイテムであり各列はタブ文字で区切られています。最初のアイテムは列名です。
+Each row is a new item (aircraft, mission, etc.) and each column is separated by tab characters. The first row is the header with the column names.
 
-値の末尾に `?` がある場合、その値が未確定であることを示します。  
-未確定の値を使用した計算は実測と異なる結果となる場合があります。ご了承ください。
+A question mark `?` after a value indicates that value is indeterminate.  
+Please keep in mind that calculations performed with these values may not be entirely accurate.
 
-値が `,` で区切られて複数の値が入っていることがあります。  
+Commas `,` can be used to separate multiple values in a single column.
 
-各ファイルと含まれるカラムの意味は下記をご参照ください。
+Please refer below for explanations of each file and their columns.
 
 ### AircraftList
-機体情報です。
+Aircraft information.
 
 * `ID`
-  項目ごとに重複しない数値です。機体の識別にお使いいただけます。
+  A unique numerical value to refer to the aircraft.
 * `Name`
-  機体名です。
+  The aircraft's name.
 * `Role`
-  ロールです。`F`, `M`, `A`, `B`, `PF` のいずれかです。
+  The aircraft's role. Can be `F`, `M`, `A`, `B`, or `PF` (Fighter, Multirole, Attacker, Bomber, Piston Fighter, respectively).
 * `Base Cst.`
-  機体のコストです。ダメージ計算の際には 50 単位で切り上げて扱われます。  
-  (525 は 550 として、675 は 700 として計算)
+  The aircraft's base Cst value as listed in game.  
+  When calculating attack power, the base Cst is rounded up to the nearest 50.  
+  (examples: 525->550; 675->700)
 * `Handicap`
-  ダメージ補正値です。ダメージ計算の際に威力補正値に加算されます。
+  A value used to correct an aircraft's attack power.
 * `Main`
-  兵装です。空欄の場合 `MSL` を使用します。
+  The aircraft's main weapon. If this is left blank, `MSL` is used by default.
 * `SP.W 1`, `SP.W 2`, `SP.W 3`
-  1 番目, 2 番目, 3 番目の特殊兵装です。
+  The aircraft's first, second, and third special weapons.
 * `BODY`, `ARMS`, `MISC`
-  それぞれ BODY, ARMS, MISC スロットの数です。
+  The aircraft's BODY, ARMS, and MISC part slots at Lv.1.
 * `Mod Cost`
-  パーツ換装費用の計算元になる値です。  
-  強化型エンジンノズル S の換装費用はこれと同一であり、データリンク換装費用はこれの半分です。
+  A value to calculate the price of equipping parts onto the aircraft.  
+  Based on the price of equipping Enhanced Engine Nozzle S to the aircraft, or double the price of switching the aircraft's Datalink.
 
 ### AircraftCstTableList
-機体コスト計算用テーブルです。
+A table used to calculate an aircraft's Cst. Any aircraft's Cst can be calculated with the below formula:
 ```
 BaseCst +
   max(0, table["2-10"] * min(Lv - 1, 9)) +
@@ -50,141 +53,144 @@ BaseCst +
   max(0, table["16"] * min(Lv - 15, 1)) +
   max(0, table["17-"] * (Lv - 16))
 ```
-のような式で機体コストを算出することができます。
 
 * `Name/Cst.`
-  対象の機体名または機体コストです。一致する機体名もしくは機体コストを持つ機体に対して以下のコスト増加量が適用されます。
+  The target aircraft name or the target aircraft Base Cst. The following incremental Cst values are added to each level of the corresponding aircraft.
 * `2-10`
-  Lv.2～10 における Lv. 上昇ごとのコスト増加量です。
+  The value at which the Cst rises for Lv.2–10.
 * `11-15`
-  Lv.11～15 における Lv. 上昇ごとのコスト増加量です。
+  The value at which the Cst rises for Lv.11–15.
 * `16`
-  Lv.16 におけるコスト増加量です。
+  The value at which the Cst rises for Lv.16.
 * `17-`
-  Lv.17 以降における Lv. 上昇ごとのコスト増加量です。
+  The value at which the Cst rises for Lv.17–20.
 
 ### SpecialWeaponList
-通常兵装と特殊兵装の情報です。
+Standard and special weapon information.
 
 * `ID`
-  項目ごとに重複しない数値です。兵装の識別にお使いいただけます。
+  A unique numerical value to refer to the weapon.
 * `Name`
-  兵装の名前です。
+  The weapon's name.
 * `Role`
-  兵装の分類です。`A` (対空), `G` (対地), `O` (その他) のいずれかです。
+  The weapon's role. Must be one of: `A` (Anti-Air), `G` (Anti-Ground), or `O` (Other).
 * `Category`
-  兵装の種別です。
+  The weapon's type. See the table for examples.
 * `Air F`, `Air M`, `Air A`, `Air B`, `Air PF`
-  それぞれ Fighter, Multirole, Attacker, Bomber, Piston Fighter の対空時の兵装倍率です。
+  A damage multiplier when this weapon is used against air targets when equipped by a Fighter, Multirole, Attacker, Bomber, or Piston Fighter. Leave the columns blank for the aircraft roles that cannot equip this weapon.
 * `Ground F`, `Ground M`, `Ground A`, `Ground B`, `Ground PF`
-  それぞれ Fighter, Multirole, Attacker, Bomber, Piston Fighter の対地時の兵装倍率です。
+  A damage multiplier when this weapon is used against ground targets when equipped by a Fighter, Multirole, Attacker, Bomber, or Piston Fighter. Leave the columns blank for the aircraft roles that cannot equip this weapon.
 * `Strong Multiplier`
-  特効対象の敵への攻撃時に掛けられる値です。
+  A damage multiplier when this weapon is used against targets it is strong against.
 * `Weak Divider`
-  耐性を持つ敵への攻撃時に割る値です。
+  A damage divider when this weapon is used against targets it is weak against.
 * `Max Simultaneous Attacks`
-  最大同時発射数です。
+  The maximum number of times this weapon can be fired simultaneously.
 * `Initial Power`
-  Lv.1 時の威力補正値です。
+  A value used to calculate the weapon's damage at Lv.1.
 * `Power Increment`
-  Lv. 上昇ごとに増加する威力補正値です。
+  The value at which the weapon's damage increases by with each level.
 * `Fixed Base Cst.`
-  機体のコストに関わらず固定の威力である場合、機体の代わりに計算に用いられるコストです。
+  If the weapon uses a special Base Cst value for damage calculation instead of the aircraft's Base Cst, list it here.
 * `Related Damage`
-  多段攻撃でそれぞれの威力が異なる場合、連続する威力を計算するために参照する兵装定義の名前です。
+  If the weapon has multiple stages of attack (ex: the MPBM's shockwave), this refers to the weapon name of the next successive attack stage.
 * `Cst.`
-  兵装の各 Lv. ごとのコストです。
+  The weapon's Cst values for all of its levels, separated by commas `,`.
 
 ### PartsList
-パーツの情報です。
+Aircraft part information.
 
 * `ID`
-  項目ごとに重複しない数値です。パーツの識別にお使いいただけます。
+  A unique numerical value to refer to the part.
 * `Name`
-  パーツの名前です。
+  The part's name in Japanese.
 * `English Name`
-  英語名です。
+  The part's name in English.
 * `Cst.`
-  パーツのコストです。
+  The part's Cst value.
 * `Category`
-  分類です。
+  A classification for the part.
 * `Group`
-  グループ用文字列です。同じグループ用文字列を持つパーツは同時に装備できません。
+  A group identifier. Only one part from a group can be equipped at any time.
 * `SP.W`
-  適用対象となる兵装です。
+  The special weapons the part affects. The part can only be equipped if one of its corresponding special weapons is equipped. If left blank, the part can be equipped regardless of special weapon.
 * `Role`
-  装備可能な機体のロールです。デフォルトではロールを問わす装備できます。
+  The aircraft roles the part is restricted to. If left blank, the part can be equipped by any aircraft.
 * `Slot`
-  装備するスロットです。
+  The slot category the part is equipped to: `BODY`, `ARMS`, or `MISC`.
 * `Slot Usage`
-  消費するスロット数です。
+  The number of slots the part consumes.
 * `Power`
-  装備時にダメージに加算される威力補正値です。
+  A damage multiplier that is applied when the part is equipped.
 * `Hits`
-  装備時に増加するヒット数です。
+  The number of additional hits added to the corresponding weapon's Max Simultaneous Attacks when the part is equipped.
 
 ### DataLink
-データリンクの情報です。
+Datalink bonus information.
 
 * `Name`
-  データリンク名です。
+  The datalink's Japanese name.
 * `English Name`
-  英語名です。
+  The datalink's English name.
 * `Cst.`
-  データリンクのコストです。  
-  現在は使用されておらず、どのデータリンクを装備してもコストが上昇することはありません。 
+  The datalink's Cst before version 2.09.  
+  As of version 2.09 released on November 18, 2015, datalinks no longer add Cst. 
 
 ### EnemyList
-敵の情報です。
+Enemy unit information.
 
 * `Name`
-  敵の名前です。
+  The enemy unit's name.
 * `Role`
-  対空目標であるか対地目標であるかを表します。`A` (空), `G` (地) のいずれかです。
+  An indicator of whether the enemy is an air enemy `A` or a ground enemy `G`.
 * `Color`
-  敵の色です。`Y` (黄), `O` (橙), `R` (赤), `TGT` のいずれかです。
+  The enemy's color on the radar. Must be `Y` (Yellow), `O` (Orange), `R` (Red), or `TGT`.
 * `Score`
-  撃破した際に得られるスコアです。
+  The number of points the enemy is worth.
 * `HP`
-  敵の耐久力です。
+  The enemy's endurance.
 * `Soft Target`
-  `TRUE` の場合、ロールを問わず Fighter の兵装倍率を使用することを表します。
+  If this is set to `TRUE`, the weapon multiplier for the Fighter role is used regardless of the player's aircraft.
 * `Hard Multiplier`
-  HARD ミッションにて耐久力に掛けられる倍率です。空欄の場合 `1.2` を使用します。
+  An endurance multiplier the enemy receives on HARD missions. If blank, the default is `1.2`.
 * `Weakness`
-  特効率が適用される兵装の一覧です。
+  A list of weapons the enemy is weak to, separated by commas `,`.
 * `Strongness`
-  耐性率が適用される兵装の一覧です。
+  A list of weapons the enemy is strong against, separated by commas `,`.
 * `Stages`
-  敵が出現するミッションの一覧です。
+  A list of missions the enemy appears in, separated by commas `,`. If a normal mission is listed, its HARD variant is therefore implied.
 
 ### StageList
-ミッションの情報です。
+Mission information.
 
 * `ID`
-  項目ごとに重複しない数値です。ミッションの識別にお使いいただけます。
+  A unique numerical value to refer to the mission.
 * `Key`
-  略称です。EnemyList にて出現ミッションを一覧するために使用されています。
+  An abbreviation of the mission's name, to be used for HARD missions and the [EnemyList](#enemylist) table.
 * `Name`
-  ミッションの名前です。
+  The mission's full name.
 * `HARD`
-  `TRUE` の場合、HARD ミッションであることを表します。
+  If set to `TRUE`, indicates that this mission is a HARD variant.
 * `Original`
-  HARD ミッションの元になるミッションです。
+  If `HARD` is set to `TRUE`, the key of the original version of this mission.
 * `Special Raid`
-  `TRUE` の場合、非常招集 ミッションであることを表します。
+  If set to `TRUE`, indicates that this mission is a Special Raid.
 
 
-## 謝辞
-このデータは多くの方のご協力がなければ成り立ちませんでした。  
-[Berkut Method](http://berkut.blog.jp/) にて基となるデータを公開してくださったブログ主様、  
-多くのデータの収集・計算に関してご協力いただいた月見リナ様、  
-およびゲーム内の実測値を提供していただいた多くの皆様にこの場を借りて感謝を申し上げます。
+## Special Thanks
+This data could not be collected without the cooperation of many people. Thanks to:
+* the blog owner of [Berkut Method](http://berkut.blog.jp/) who discovered the underlying data calculations
+* mfakane for creating the original repo and bringing all of this data to the community
+* Tukimi Rina for helping on data collection and calculation
+* everyone who used and borrowed this data and the original website to keep it alive and updated
+* members of the Ace Combat Reddit Discord server for further data collection
 
-## ライセンス
+## License
 [![CC0](http://i.creativecommons.org/p/zero/1.0/88x31.png "CC0")](http://creativecommons.org/publicdomain/zero/1.0/deed.ja)  
-InfData に含まれるファイルは CC0 でライセンスされています。  
-どなたでも自由にご利用いただけます。
+The files and data included in both the original InfData repo and this fork are released under the CC0 license.  
+Anyone can use this information freely.
 
-## 連絡先
-mfakane <<star@sorairo.pictures>>
+## Contact Information
+Azekthi <<https://twitter.com/Azekthi>>
+
+[Click here for the original repo by mfakane.](https://github.com/InfBuild/InfData)
